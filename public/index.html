@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The TechX MD</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Particle background -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Channel Follow Modal -->
+  <div id="channelModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2><i class="fas fa-bell"></i> Important Notice</h2>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <p>To use The TechX MD, you must follow our official channels for updates and support.</p>
+        <div class="channel-list">
+          <a href="https://whatsapp.com/channel/0029VbDKjmv7IUYP9uQj2g2h" target="_blank" class="channel-item">
+            <i class="fab fa-whatsapp"></i>
+            <span>WhatsApp Channel</span>
+          </a>
+          <a href="https://whatsapp.com/channel/0029VbCieNjADTOH9H3xJB34" target="_blank" class="channel-item">
+            <i class="fab fa-whatsapp"></i>
+            <span>Whatsapp Channel</span>
+          </a>
+          <a href="https://www.youtube.com/@silver_x13" target="_blank" class="channel-item">
+            <i class="fab fa-youtube"></i>
+            <span>YouTube Channel</span>
+          </a>
+          <a href="https://whatsapp.com/channel/0029Vb78nOB0G0XcWJq8me3w" target="_blank" class="channel-item">
+            <i class="fab fa-whatsapp"></i>
+            <span>Whatsapp Channel</span>
+          </a>
+        </div>
+        <div class="modal-buttons">
+          <button class="btn modal-btn" id="confirmFollow">
+            <i class="fas fa-check"></i> I've Followed All Channels
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav id="nav">
+    <div class="brand">
+      <div class="logo spinning">S</div>
+      <div>
+        <div style="font-weight:800; font-family: 'Playfair Display', serif;">The TechX MD</div>
+        <div style="font-size:0.78rem;color:var(--muted)">WhatsApp Bot</div>
+      </div>
+    </div>
+    
+    <!-- Navigation Links -->
+    <div class="nav-links" id="navLinks">
+      <a href="#features"><i class="fas fa-star"></i> Features</a>
+      <a href="#connect"><i class="fas fa-link"></i> Connect</a>
+      <a href="#links"><i class="fas fa-external-link-alt"></i> Links</a>
+    </div>
+    
+    <!-- Hamburger Menu Button -->
+    <button class="nav-toggle" id="navToggle">
+      <i class="fas fa-bars"></i>
+    </button>
+  </nav>
+
+  <header>
+    <h1><span class="logo spinning">S</span> The TechX MD</h1>
+    <p>A modern WhatsApp bot with powerful features, Made by <strong>SILVER TECH</strong>.</p>
+
+    <!-- Stats Container -->
+    <div class="stats-container">
+      <div class="stat-card active">
+        <i class="fas fa-signal"></i>
+        <div>
+          <div class="stat-value" id="activeSockets">0</div>
+          <div class="stat-label">Active Sockets</div>
+        </div>
+      </div>
+
+      <div class="stat-card total">
+        <i class="fas fa-users"></i>
+        <div>
+          <div class="stat-value" id="totalUsers">0</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="features" class="card">
+      <h2><i class="fas fa-star"></i> Features</h2>
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fas fa-reply"></i>
+          </div>
+          <h3>Auto Replies</h3>
+          <p>Smart automated responses to messages based on customizable triggers.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fas fa-image"></i>
+          </div>
+          <h3>Media Tools</h3>
+          <p>Download, convert, and manage media files with ease.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fas fa-puzzle-piece"></i>
+          </div>
+          <h3>Commands System</h3>
+          <p>Extend functionality with custom Commands and scripts.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h3>Security</h3>
+          <p>Built-in security features to protect your privacy and data.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="connect" class="card">
+      <h2><i class="fas fa-link"></i> Connect to WhatsApp</h2>
+      
+      <div class="instructions">
+        <h3>How to connect:</h3>
+        <ol>
+          <li>Enter your WhatsApp number with country code (no "+", no brackets, no spaces)</li>
+          <li>Click "Request Pairing Code"</li>
+          <li>Copy the 8-digit code</li>
+          <li>Open WhatsApp → Settings → Linked Devices → Link a Device</li>
+          <li>Paste the code when prompted</li>
+        </ol>
+      </div>
+
+      <div class="input-box">
+        <div class="input-group">
+          <i class="fas fa-phone"></i>
+          <input type="tel" id="phone" placeholder="e.g. 92330000000 (with country code)" />
+        </div>
+        <button class="btn" id="requestPairing">
+          <i class="fas fa-key"></i> Request Pairing Code
+        </button>
+      </div>
+      
+      <div id="status"></div>
+    </section>
+
+    <section id="links" class="card">
+      <h2><i class="fas fa-external-link-alt"></i> Links</h2>
+      <div class="link-grid">
+        <a class="btn btn-secondary" href="https://whatsapp.com/channel/0029VbDKjmv7IUYP9uQj2g2h" target="_blank">
+          <i class="fab fa-whatsapp"></i> WhatsApp Channel
+        </a>
+        <a class="btn btn-secondary" href="https://whatsapp.com/channel/0029VbCieNjADTOH9H3xJB34" target="_blank">
+          <i class="fab fa-whatsapp"></i> Whatsapp Channel
+        </a>
+        <a class="btn btn-secondary" href="https://www.youtube.com/@silver_x13" target="_blank">
+          <i class="fab fa-youtube"></i> YouTube Channel
+        </a>
+        <a class="btn btn-secondary" href="https://whatsapp.com/channel/0029Vb78nOB0G0XcWJq8me3w" target="_blank">
+          <i class="fab fa-whatsapp"></i> Whatsapp Channel 
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="year"></span> 2026 SILVER TECH
+  </footer>
+
+  <!-- socket.io client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- frontend logic -->
+  <script src="scripts.js"></script>
+  
+</body>
+</html>
