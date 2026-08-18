@@ -646,7 +646,7 @@ async function antiDeleteCommand(
 
     const value = String(
         args?.[0] || ""
-    ).toLowerCase();
+    ).trim().toLowerCase();
 
     if (!value || !["on", "off"].includes(value)) {
         await conn.sendMessage(
@@ -670,12 +670,25 @@ async function antiDeleteCommand(
 
     const enabled = value === "on";
 
-    setAntiDel(
-        chatId,
-        enabled
-    );
+    try {
+        setAntiDel(
+            chatId,
+            enabled
+        );
+    } catch (error) {
+        console.error("❌ Anti-delete setting error:", error.message);
+        await conn.sendMessage(
+            chatId,
+            { text: `❌ Anti-Delete setting failed: ${error.message}` },
+            { quoted: message }
+        );
+        return true;
+    }
 
-    if (enabled) {
+    const savedState = isAntiDel(chatId);
+    console.log(`🛡️ Anti-delete state for ${chatId}: ${savedState ? "ON" : "OFF"}`);
+
+    if (enabled && savedState) {
         await conn.sendMessage(
             chatId,
             {
@@ -686,13 +699,19 @@ async function antiDeleteCommand(
             },
             { quoted: message }
         );
-    } else {
+    } else if (!enabled && !savedState) {
         await conn.sendMessage(
             chatId,
             {
                 text:
                     `🛡️ *ANTI-DELETE DISABLED* ❌`
             },
+            { quoted: message }
+        );
+    } else {
+        await conn.sendMessage(
+            chatId,
+            { text: `❌ Anti-Delete could not be changed. Check server logs.` },
             { quoted: message }
         );
     }
@@ -1442,6 +1461,36 @@ async function handleMessage(
 // 4. Never register this listener inside command execution.
 // ============================================================
 
+async function interceptAntiDeleteCommand(conn, message, sessionId) {
+    try {
+        if (!message?.key || !message?.message) return false;
+
+        const body = getMessageText(message);
+        if (!body) return false;
+
+        const prefix = userPrefixes.get(sessionId) || PREFIX;
+        if (!body.startsWith(prefix)) return false;
+
+        const raw = body.slice(prefix.length).trim();
+        if (!raw) return false;
+
+        const parts = raw.split(/\s+/);
+        const commandName = normalizeCommandName(parts.shift());
+        const args = parts;
+
+        if (!['antidelete', 'antidel', 'anti-delete'].includes(commandName)) {
+            return false;
+        }
+
+        console.log(`🛡️ Anti-delete command intercepted: .${commandName} ${args.join(' ')}`);
+        await antiDeleteCommand(conn, message, commandName, args);
+        return true;
+    } catch (error) {
+        console.error('❌ Anti-delete command interception error:', error.message);
+        return false;
+    }
+}
+
 async function processMessageUpsert(
     conn,
     upsert,
@@ -1494,6 +1543,14 @@ async function processMessageUpsert(
                     error.message
                 );
             }
+        }
+
+        // Anti-delete command gets a dedicated early path.
+        // This makes .antidelete on/off work reliably even for
+        // self-chat/fromMe messages and avoids depending on any
+        // other command-routing branch.
+        if (await interceptAntiDeleteCommand(conn, message, sessionId)) {
+            continue;
         }
 
         // Normal command/message processing.
