@@ -638,32 +638,52 @@ async function antiDeleteCommand(
     }
 
     const chatId =
-        message?.key?.remoteJid;
+        message?.key?.remoteJid ||
+        message?.key?.remoteJidAlt ||
+        "";
 
     if (!chatId) {
+        console.error("❌ Anti-delete: remoteJid missing");
         return true;
     }
+
+    // Try a quoted reply first, then retry without quoting. This is
+    // important for WhatsApp self-chat on some Baileys builds.
+    const sendAntiDeleteReply = async (payload) => {
+        try {
+            return await conn.sendMessage(
+                chatId,
+                payload,
+                { quoted: message }
+            );
+        } catch (quotedError) {
+            console.error(
+                "⚠️ Anti-delete quoted reply failed:",
+                quotedError.message
+            );
+            return await conn.sendMessage(
+                chatId,
+                payload
+            );
+        }
+    };
 
     const value = String(
         args?.[0] || ""
     ).trim().toLowerCase();
 
     if (!value || !["on", "off"].includes(value)) {
-        await conn.sendMessage(
-            chatId,
-            {
-                text:
-                    `🛡️ *ANTI-DELETE*\n\n` +
-                    `Status: *${
-                        isAntiDel(chatId)
-                            ? "ON ✅"
-                            : "OFF ❌"
-                    }*\n\n` +
-                    `Use .antidelete on\n` +
-                    `Use .antidelete off`
-            },
-            { quoted: message }
-        );
+        await sendAntiDeleteReply({
+            text:
+                `🛡️ *ANTI-DELETE*\n\n` +
+                `Status: *${
+                    isAntiDel(chatId)
+                        ? "ON ✅"
+                        : "OFF ❌"
+                }*\n\n` +
+                `Use .antidelete on\n` +
+                `Use .antidelete off`
+        });
 
         return true;
     }
@@ -676,44 +696,43 @@ async function antiDeleteCommand(
             enabled
         );
     } catch (error) {
-        console.error("❌ Anti-delete setting error:", error.message);
-        await conn.sendMessage(
-            chatId,
-            { text: `❌ Anti-Delete setting failed: ${error.message}` },
-            { quoted: message }
+        console.error(
+            "❌ Anti-delete setting error:",
+            error.message
         );
+
+        await sendAntiDeleteReply({
+            text:
+                `❌ Anti-Delete setting failed: ${error.message}`
+        });
+
         return true;
     }
 
     const savedState = isAntiDel(chatId);
-    console.log(`🛡️ Anti-delete state for ${chatId}: ${savedState ? "ON" : "OFF"}`);
+
+    console.log(
+        `🛡️ Anti-delete state for ${chatId}: ${
+            savedState ? "ON" : "OFF"
+        }`
+    );
 
     if (enabled && savedState) {
-        await conn.sendMessage(
-            chatId,
-            {
-                text:
-                    `🛡️ *ANTI-DELETE ENABLED* ✅\n\n` +
-                    `Deleted messages will be recovered ` +
-                    `in this chat.`
-            },
-            { quoted: message }
-        );
+        await sendAntiDeleteReply({
+            text:
+                `🛡️ *ANTI-DELETE ENABLED* ✅\n\n` +
+                `Deleted messages will be recovered in this chat.`
+        });
     } else if (!enabled && !savedState) {
-        await conn.sendMessage(
-            chatId,
-            {
-                text:
-                    `🛡️ *ANTI-DELETE DISABLED* ❌`
-            },
-            { quoted: message }
-        );
+        await sendAntiDeleteReply({
+            text:
+                `🛡️ *ANTI-DELETE DISABLED* ❌`
+        });
     } else {
-        await conn.sendMessage(
-            chatId,
-            { text: `❌ Anti-Delete could not be changed. Check server logs.` },
-            { quoted: message }
-        );
+        await sendAntiDeleteReply({
+            text:
+                `❌ Anti-Delete could not be changed. Check server logs.`
+        });
     }
 
     return true;
