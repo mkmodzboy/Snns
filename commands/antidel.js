@@ -1,18 +1,39 @@
 const { setAntiDel, isAntiDel } = require("../antidelSystem");
 
 module.exports = {
-    pattern: "antidel",
+    pattern: "antidelete",
+    alias: ["antidel", "anti-delete"],
+    desc: "Toggle anti-delete for the current chat",
+    category: "security",
 
-    execute: async (conn, message, m, { reply, from }) => {
+    execute: async (conn, message, m, { reply, from, args }) => {
+        try {
+            const value = String(args?.[0] || "").trim().toLowerCase();
 
-        const status = isAntiDel(from);
+            if (!value) {
+                return reply(
+                    `🛡️ *ANTI-DELETE*\n\n` +
+                    `Status: *${isAntiDel(from) ? "ON ✅" : "OFF ❌"}*\n\n` +
+                    `Use .antidelete on\n` +
+                    `Use .antidelete off`
+                );
+            }
 
-        setAntiDel(from, !status);
+            if (value !== "on" && value !== "off") {
+                return reply("📌 Usage: .antidelete on/off");
+            }
 
-        return reply(
-            !status
-                ? "✅ Anti-Delete ON\nAb deleted messages automatically recover hongi."
-                : "❌ Anti-Delete OFF"
-        );
+            const enabled = value === "on";
+            setAntiDel(from, enabled);
+
+            return reply(
+                enabled
+                    ? "🛡️ *ANTI-DELETE ENABLED* ✅\n\nDeleted messages will be recovered in this chat."
+                    : "🛡️ *ANTI-DELETE DISABLED* ❌"
+            );
+        } catch (error) {
+            console.error("❌ Anti-delete command error:", error);
+            return reply(`❌ Anti-Delete failed: ${error.message}`);
+        }
     }
 };
