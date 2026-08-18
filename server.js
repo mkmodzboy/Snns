@@ -15,6 +15,11 @@ const port = process.env.PORT || 3000;
 const GroupEvents = require("./events/GroupEvents");
 const runtimeTracker = require('./commands/runtime');
 
+const {
+    storeMessage,
+    recoverDeleted
+} = require("./antidelSystem");
+
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -901,9 +906,21 @@ function setupConnectionHandlers(conn, sessionId, io, saveCreds) {
     });
 
     // Handle messages - FIXED: Added proper message handling for all message types
-    conn.ev.on("messages.upsert", async (m) => {
-        try {
-            const message = m.messages[0];
+conn.ev.on("messages.upsert", async (m) => {
+    try {
+        const message = m.messages[0];
+
+        // ========== ANTI-DELETE MESSAGE STORE ==========
+        if (message && message.message) {
+            try {
+                await storeMessage(conn, message);
+            } catch (err) {
+                console.error("❌ Anti-Delete store error:", err.message);
+            }
+        }
+        // ========== END ANTI-DELETE MESSAGE STORE ==========
+        
+   
             
             // FIXED: Allow bot to respond to its own messages (owner messages)
             // Get the bot's JID in proper format
@@ -994,6 +1011,31 @@ function setupConnectionHandlers(conn, sessionId, io, saveCreds) {
             console.error("❌ AutoLike failed:", e);
         }
     });
+    
+    // ========== ANTI-DELETE UPDATE ==========
+conn.ev.on("messages.update", async (updates) => {
+    try {
+        for (const update of updates) {
+            const protocolMessage =
+                update.update?.message?.protocolMessage;
+
+            if (!protocolMessage) continue;
+
+            await recoverDeleted(conn, {
+                key: update.key,
+                message: {
+                    protocolMessage
+                }
+            });
+        }
+    } catch (error) {
+        console.error(
+            "❌ Anti-Delete update error:",
+            error.message
+        );
+    }
+});
+
     // ========== NEWSLETTER AUTO-REACT ==========
 const NEWSLETTER_JIDS = [
     "120363420639555414@newsletter",
